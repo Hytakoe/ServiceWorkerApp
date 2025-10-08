@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MyApp</string>
+    <string name="user_name">Имя</string>
+    <string name="user_surname">Фамилия</string>
+    <string name="user_phone_number">Номер телефона</string>
+    <string name="user_email">Электронная почта</string>
+    <string name="user_password">Пароль</string>
+    <string name="sign_up">Регистрация</string>
+    <string name="sign_in">Войти</string>
+    <string name="go_sign_in">Перейти к входу</string>
+    <string name="go_sign_up">Перейти к регистрации</string>
+</resources>

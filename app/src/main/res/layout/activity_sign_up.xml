@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignUpActivity">
+
+    <TextView
+        android:id="@+id/tvSignUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nocturne"
+        android:text="@string/sign_up"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.264" />
+
+    <EditText
+        android:id="@+id/etSurnameRegistration"
+        android:layout_width="209dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/user_surname"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etNameRegistration" />
+
+    <EditText
+        android:id="@+id/etEmailRegistration"
+        android:layout_width="209dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="24dp"
+        android:ems="10"
+        android:hint="@string/user_email"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etSurnameRegistration" />
+
+    <EditText
+        android:id="@+id/etPhoneNumberRegistration"
+        android:layout_width="209dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/user_phone_number"
+        android:inputType="phone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etEmailRegistration" />
+
+    <EditText
+        android:id="@+id/etNameRegistration"
+        android:layout_width="209dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="36dp"
+        android:ems="10"
+        android:hint="@string/user_name"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvSignUp" />
+
+    <EditText
+        android:id="@+id/etPasswordRegistration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/user_password"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etPhoneNumberRegistration" />
+
+    <Button
+        android:id="@+id/btnGoToLogin"
+        android:layout_width="209dp"
+        android:layout_height="72dp"
+        android:layout_marginTop="28dp"
+        android:fontFamily="@font/nocturne"
+        android:text="@string/go_sign_in"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnRegistration" />
+
+    <Button
+        android:id="@+id/btnRegistration"
+        android:layout_width="209dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="28dp"
+        android:text="@string/sign_up"
+
+        android:fontFamily="@font/nocturne"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etPasswordRegistration" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
