@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MobileApp">
         <activity
-            android:name=".SignUpActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:name=".ui.sign_up.SignUpActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignInActivity"
+        <activity android:name=".ui.sign_in.SignInActivity"
             android:label="Test">
         </activity>
     </application>
