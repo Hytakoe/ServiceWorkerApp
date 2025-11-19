@@ -9,4 +9,18 @@
     <string name="sign_in">Войти</string>
     <string name="go_sign_in">Перейти к входу</string>
     <string name="go_sign_up">Перейти к регистрации</string>
+
+    <string-array name="car_names">
+        <item name="bmw_x5">BMW X5 к321нр36</item>
+        <item name="lada_granta">Lada Granta к131не136</item>
+        <item name="volvo_s60">Volvo S60 о878о77</item>
+    </string-array>
+    <string-array name="job_names">
+        <item name="oil_change">Замена масла</item>
+        <item name="air_filter_change">Замена воздушного фильтра</item>
+    </string-array>
+    <string-array name="comments">
+        <item name="oil_change_comment">Масло 5w30, фильтр HU9254x</item>
+        <item name="air_filter_comment">Фильтр 13718577170</item>
+    </string-array>
 </resources>

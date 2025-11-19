@@ -1,4 +1,4 @@
-package com.example.mobileapp.data.bottom_navigation
+package com.example.mobileapp.ui.bottom_navigation
 
 data class BottomNavigationSection(
     val title: String,

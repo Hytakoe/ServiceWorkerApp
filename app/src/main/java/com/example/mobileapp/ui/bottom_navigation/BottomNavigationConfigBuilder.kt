@@ -1,4 +1,4 @@
-package com.example.mobileapp.data.bottom_navigation
+package com.example.mobileapp.ui.bottom_navigation
 
 import android.view.MenuItem
 import androidx.annotation.ColorRes
@@ -23,7 +23,7 @@ class BottomNavigationConfigBuilder {
     fun sections(builder: BottomNavigationSectionsBlockBuilder.() -> Unit) {
         val sectionList = BottomNavigationSectionsBlockBuilder().apply(builder).build()
         sections.clear()
-        sections.addAll(sectionList._sections)
+        sections.addAll(sectionList.sections)
     }
 
     fun onItemClicked(listener: (BottomNavigationSection) -> Unit) {

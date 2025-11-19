@@ -16,14 +16,18 @@
             android:windowSoftInputMode="adjustResize"
             android:name=".ui.sign_up.SignUpActivity"
             android:exported="true">
+        </activity>
+        <activity android:name=".ui.sign_in.SignInActivity"
+            android:label="Test">
+        </activity>
+        <activity android:name=".ui.main_menu.MainMenuActivity"
+            android:exported="true"
+            android:label="Test">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".ui.sign_in.SignInActivity"
-            android:label="Test">
         </activity>
     </application>
 
