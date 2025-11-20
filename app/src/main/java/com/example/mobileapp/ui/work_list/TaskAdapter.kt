@@ -3,7 +3,6 @@ package com.example.mobileapp.ui.workList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -11,12 +10,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobileapp.R
 import com.example.mobileapp.data.model.Task
-import com.example.mobileapp.ui.catalogue.WorkListUiItem
+import com.example.mobileapp.ui.work_list.WorkListUiItem
 
 class TaskAdapter (): ListAdapter<WorkListUiItem, TaskAdapter.TaskViewHolder>(TaskCallBack()) {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_main, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.rv_main_row, parent, false)
             return TaskViewHolder(view)
         }
 

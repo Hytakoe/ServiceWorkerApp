@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobileapp.databinding.FragmentMainBinding
-import com.example.mobileapp.ui.catalogue.WorkListViewModel
+import com.example.mobileapp.ui.work_list.WorkListViewModel
 import com.example.mobileapp.ui.workList.TaskAdapter
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -44,13 +44,13 @@ class MainFragment : Fragment() {
         Log.d("CatalogueFragment", "Starting setupRecyclerView")
         val rv: RecyclerView = binding.mainRV
         Log.d("CatalogueFragment", "Setting layout manager")
-        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
+        val linearLayoutManager = LinearLayoutManager(requireContext())
 
         // создаем адаптер с колбеками для кнопок +/-
         myAdapter = TaskAdapter()
 
         rv.apply {
-            layoutManager = gridLayoutManager
+            layoutManager = linearLayoutManager
             Log.d("CatalogueFragment", "Setting adapter: ${myAdapter != null}")
             adapter = myAdapter
             setHasFixedSize(true)

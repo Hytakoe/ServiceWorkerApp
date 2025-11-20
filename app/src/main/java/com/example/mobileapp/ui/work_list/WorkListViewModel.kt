@@ -1,4 +1,4 @@
-package com.example.mobileapp.ui.catalogue
+package com.example.mobileapp.ui.work_list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -45,12 +45,12 @@ class WorkListViewModel(
 
     fun onSearchQueryChanged(query: String) {
         _uiState.value = _uiState.value?.copy(searchQuery = query)
-        //applyFilterAndSearch()
+        applyFilterAndSearch()
     }
 
     fun onFilterSelected(filter: TaskFilter) {
         _uiState.value = _uiState.value?.copy(selectedFilter = filter)
-        //applyFilterAndSearch()
+        applyFilterAndSearch()
     }
 
     fun onAddingToWorkList(taskId: Int) {
@@ -79,7 +79,7 @@ class WorkListViewModel(
 
                     loadUserWorkList()
 
-                    //applyFilterAndSearch()
+                    applyFilterAndSearch()
                     _uiState.value = _uiState.value?.copy(isLoading = false)
                 }
                 is TaskResult.Error -> {
@@ -111,7 +111,7 @@ class WorkListViewModel(
             is WorkListResult.Success -> {
                 userWorkListItems.clear()
                 userWorkListItems.addAll(result.data)
-                //applyFilterAndSearch()
+                applyFilterAndSearch()
             }
             is WorkListResult.Error -> _uiState.value = _uiState.value?.copy(errorMessage = result.message)
             is WorkListResult.Loading -> _uiState.value = _uiState.value?.copy(isLoading = true)
@@ -141,12 +141,12 @@ class WorkListViewModel(
 //        }
 //    }
 
-    /*private fun applyFilterAndSearch() {
+    private fun applyFilterAndSearch() {
         val state = _uiState.value
         var filteredTasks = allTasks
 
         // применяем поиск
-        if (state.searchQuery.isNotBlank()) {
+        /*if (state.searchQuery.isNotBlank()) {
             filteredTasks = filteredTasks.filter { task ->
                 task.job.startsWith(state.searchQuery)
             }.toMutableList()
@@ -159,21 +159,20 @@ class WorkListViewModel(
             TaskFilter.PRICE_HIGH_TO_LOW -> filteredTasks.sortedByDescending { task -> task.price }.toMutableList()
             TaskFilter.NAME_A_TO_Z -> filteredTasks.sortedBy { task -> task.name }.toMutableList()
             TaskFilter.NAME_Z_TO_A -> filteredTasks.sortedByDescending { task -> task.name }.toMutableList()
-        }
+        }*/
 
         // создаем ui для модели
         val catalogueUiItems = filteredTasks.map {
-                task -> CatalogueUiItem(
-            task,
-            quantityInWorkList = userWorkListItems.find { it.taskId == task.id }?.quantity ?: 0
+                task -> WorkListUiItem(
+            task
         )
         }
 
         _uiState.value = state?.copy(
-            catalogueUiItems=catalogueUiItems,
+            workListUiItems=catalogueUiItems,
             isLoading = false
-        ) ?: CatalogueUiState (catalogueUiItems = catalogueUiItems)
-    }*/
+        ) ?: WorkListUiState (workListUiItems = catalogueUiItems)
+    }
 }
 
 enum class TaskFilter {

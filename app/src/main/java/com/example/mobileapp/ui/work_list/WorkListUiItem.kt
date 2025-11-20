@@ -1,4 +1,4 @@
-package com.example.mobileapp.ui.catalogue
+package com.example.mobileapp.ui.work_list
 
 import com.example.mobileapp.data.model.Task
 
