@@ -5,12 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobileapp.data.model.AuthResult
-import com.example.mobileapp.domain.usercase.SignInUseCase
-import com.example.mobileapp.domain.usercase.SignUpUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.mobileapp.domain.usecase.SignUpUseCase
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(private val signUpUseCase: SignUpUseCase) : ViewModel() {

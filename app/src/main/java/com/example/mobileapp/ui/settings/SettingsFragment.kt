@@ -1,10 +1,10 @@
-package com.example.mobileapp.ui.main_menu
+package com.example.mobileapp.ui.settings
 
-import androidx.fragment.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.example.mobileapp.R
 
 class SettingsFragment : Fragment() {

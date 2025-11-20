@@ -21,13 +21,12 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainMenuActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainMenuBinding
-    private val viewModel: SignInViewModel by viewModel()
+    //private val viewModel: SignInViewModel by viewModel()
 
-    private val INTENT_USER_EMAIL = "UserEmail"
+    //private val INTENT_USER_EMAIL = "UserEmail"
 
     private lateinit var navController: NavController
 
-    @SuppressLint("ServiceCast", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
@@ -53,7 +52,7 @@ class MainMenuActivity : AppCompatActivity() {
             //remoteLoader(GlideMenuIconLoader(context = context.applicationContext))
             onItemClicked { section ->
                 navController.navigate(route = section.link)
-                Log.d(TAG, "section clicked: $section")
+                //Log.d(TAG, "section clicked: $section")
             }
         }
     }

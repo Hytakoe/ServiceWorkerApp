@@ -1,4 +1,4 @@
-package com.example.mobileapp.domain.usercase
+package com.example.mobileapp.domain.usecase
 
 import com.example.mobileapp.data.model.AuthResult
 import com.example.mobileapp.data.model.User

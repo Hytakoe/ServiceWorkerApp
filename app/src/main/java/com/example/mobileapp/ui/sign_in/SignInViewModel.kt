@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobileapp.data.model.AuthResult
-import com.example.mobileapp.domain.usercase.SignInUseCase
+import com.example.mobileapp.domain.usecase.SignInUseCase
 import kotlinx.coroutines.launch
 
 class SignInViewModel(private val signInUseCase: SignInUseCase) : ViewModel() {
