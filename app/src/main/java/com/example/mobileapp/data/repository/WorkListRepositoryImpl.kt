@@ -13,7 +13,7 @@ class WorkListRepositoryImpl(
         return try {
             // Проверяем существует ли продукт
             val taskResult = taskRepository.getTaskById(taskId)
-            if (taskResult is TaskResult.Success) {
+            if (taskResult is TaskResult.Success<*>) {
                 val currentQuantity = workListItems[taskId] ?: 0
                 workListItems[taskId] = currentQuantity + 1
                 WorkListResult.Success(Unit)
@@ -45,7 +45,7 @@ class WorkListRepositoryImpl(
             val items = workListItems.mapNotNull { (taskId, quantity) ->
                 // получаем актуальную информацию о товаре
                 when (val result = taskRepository.getTaskById(taskId)) {
-                    is TaskResult.Success -> {
+                    is TaskResult.Success<*> -> {
                         val task = result.data
                         TaskInWorkList(
                             userId = userId,

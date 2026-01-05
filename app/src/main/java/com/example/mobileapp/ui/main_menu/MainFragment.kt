@@ -6,12 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobileapp.databinding.FragmentMainBinding
 import com.example.mobileapp.ui.work_list.WorkListViewModel
 import com.example.mobileapp.ui.workList.TaskAdapter
+import com.example.mobileapp.ui.work_list.WorkListUiItem
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
 
@@ -21,102 +24,85 @@ class MainFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var myAdapter: TaskAdapter
 
-    /*private lateinit var binding: FragmentMainBinding
-    private var tasks: MutableList<TaskInWorkList> = mutableListOf()
-    private val images: MutableList<Int> = mutableListOf(
-        R.drawable.free_icon_font_checkbox_3917076,
-        R.drawable.free_icon_font_exclamation_3917692
-    )*/
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //binding = FragmentMainBinding.inflate(inflater, container, false)
-        //return binding.root
-        //return inflater.inflate(R.layout.fragment_main, container, false)
         _binding = FragmentMainBinding.inflate(inflater, container, false)
-        setupRecyclerView()
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupRecyclerView()
+        setupObservers()
+
+        // Загружаем задачи при создании фрагмента
+        viewModel.loadTasks()
+    }
+
     private fun setupRecyclerView() {
-        Log.d("CatalogueFragment", "Starting setupRecyclerView")
+        Log.d("MainFragment", "Starting setupRecyclerView")
         val rv: RecyclerView = binding.mainRV
-        Log.d("CatalogueFragment", "Setting layout manager")
+        Log.d("MainFragment", "Setting layout manager")
         val linearLayoutManager = LinearLayoutManager(requireContext())
 
-        // создаем адаптер с колбеками для кнопок +/-
+        // Создаем адаптер (без параметров, если ваш TaskAdapter так работает)
         myAdapter = TaskAdapter()
 
         rv.apply {
             layoutManager = linearLayoutManager
-            Log.d("CatalogueFragment", "Setting adapter: ${myAdapter != null}")
+            Log.d("MainFragment", "Setting adapter: ${myAdapter != null}")
             adapter = myAdapter
             setHasFixedSize(true)
-            Log.d("CatalogueFragment", "Adapter item count: ${adapter?.itemCount}")
+            Log.d("MainFragment", "Adapter item count: ${adapter?.itemCount}")
         }
 
-        Log.d("CatalogueFragment", "setupRecyclerView completed")
-    }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        observeViewModel()
-        /*setUpCarTasks()
-
-        val adapter = CarRecyclerViewAdapter(requireContext(), tasks)
-
-        binding.mainRV.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            setAdapter(adapter)
-        }*/
+        Log.d("MainFragment", "setupRecyclerView completed")
     }
 
-    /*private fun setUpCarTasks() {
-        val taskRepository: WorkListRepositoryImpl
-        TaskResult
-        tasks = taskRepository.getWorkListItems(0)
-        /*val carNames: Array<String> = resources.getStringArray(R.array.car_names)
-        val carJobs: Array<String> = resources.getStringArray(R.array.job_names)
-        val comments: Array<String> = resources.getStringArray(R.array.comments)
-        tasks.clear()
-
-        for (i in carNames.indices) {
-            val j = Random.nextInt(0, carJobs.size)
-            val imageIndex = Random.nextInt(0, images.size)
-            tasks.add(
-                CarModel(
-                    carNames[i],
-                    carJobs[j],
-                    comments[j],
-                    images[imageIndex]
-                )
-            )
-        }*/
-    }*/
-    private fun observeViewModel() {
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-            // обновляем адаптер
-            myAdapter.submitList(state.workListUiItems)
-
-            // показываем/скрываем индикатор загрузки
-            //binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-
-            state.errorMessage?.let { error ->
-                showError(error)
+    private fun setupObservers() {
+        // Для StateFlow используем lifecycleScope.collect
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.tasks.collect { tasks ->
+                // Преобразуем Task в WorkListUiItem
+                val uiItems = tasks.map { task ->
+                    WorkListUiItem(task)
+                }
+                // Обновляем адаптер с полученными задачами
+                myAdapter.submitList(uiItems)
+                Log.d("MainFragment", "Tasks updated: ${tasks.size}")
             }
+        }
 
-            //binding.tv.visibility = if (state.catalogueUiItems.isEmpty()) View.VISIBLE else View.GONE
+        // Наблюдаем за состоянием загрузки
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.loading.collect { isLoading ->
+                // Показываем/скрываем прогресс (если есть ProgressBar в layout)
+                // Если нет ProgressBar - можно не добавлять
+                Log.d("MainFragment", "Loading: $isLoading")
+            }
+        }
+
+        // Наблюдаем за ошибками
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.error.collect { error ->
+                error?.let {
+                    showError(it)
+                }
+            }
         }
     }
 
     private fun showError(error: String) {
         Snackbar.make(binding.root, error, Snackbar.LENGTH_SHORT).show()
+        Log.e("MainFragment", "Error: $error")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // предотвращаем утечки памяти
+        _binding = null
     }
 }

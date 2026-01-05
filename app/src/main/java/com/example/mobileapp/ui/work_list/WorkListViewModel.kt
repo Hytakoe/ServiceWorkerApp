@@ -9,176 +9,72 @@ import com.example.mobileapp.data.model.TaskInWorkList
 import com.example.mobileapp.data.model.TaskResult
 import com.example.mobileapp.data.model.WorkListResult
 import com.example.mobileapp.domain.usecase.AddToWorkListUseCase
-import com.example.mobileapp.domain.usecase.GetAllTasksUseCase
+import com.example.mobileapp.domain.usecase.CompleteTaskUseCase
+import com.example.mobileapp.domain.usecase.CreateTaskUseCase
+import com.example.mobileapp.domain.usecase.GetTasksUseCase
 import com.example.mobileapp.domain.usecase.GetWorkListItemsUseCase
 import com.example.mobileapp.domain.usecase.RemoveFromWorkListUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class WorkListViewModel(
-    private val getAllTasksUseCase: GetAllTasksUseCase,
-    private val addToWorkListUseCase: AddToWorkListUseCase,
-    private val removeFromWorkListUseCase: RemoveFromWorkListUseCase,
-    private val getWorkListItemsUseCase: GetWorkListItemsUseCase,
-    private val currentUserId: Int
-): ViewModel() {
+    private val getTasksUseCase: GetTasksUseCase,
+    private val createTaskUseCase: CreateTaskUseCase
+) : ViewModel() {
 
-    // состояние UI
-    private val _uiState = MutableLiveData(WorkListUiState())
-    val uiState: LiveData<WorkListUiState> = _uiState
+    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-    // все продукты изначально загружаются из репозитория/бд
-    private val allTasks = mutableListOf<Task>()
-    // кэш корзины пользователя
-    private val userWorkListItems = mutableListOf<TaskInWorkList>()
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        loadInitialData()
+        loadTasks()
     }
 
-    data class WorkListUiState(
-        val workListUiItems: List<WorkListUiItem> = emptyList(),
-        val searchQuery: String = "",
-        val selectedFilter: TaskFilter = TaskFilter.NONE,
-        val isLoading: Boolean = false,
-        val errorMessage: String? = null
-    )
-
-    fun onSearchQueryChanged(query: String) {
-        _uiState.value = _uiState.value?.copy(searchQuery = query)
-        applyFilterAndSearch()
-    }
-
-    fun onFilterSelected(filter: TaskFilter) {
-        _uiState.value = _uiState.value?.copy(selectedFilter = filter)
-        applyFilterAndSearch()
-    }
-
-    fun onAddingToWorkList(taskId: Int) {
+    fun loadTasks() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value?.copy(isLoading = true)
+            _loading.value = true
+            _error.value = null
 
-            when (val result = addToWorkListUseCase(currentUserId, taskId)) {
-                is WorkListResult.Success -> loadUserWorkList()
-                is WorkListResult.Error -> {
-                    _uiState.value = _uiState.value?.copy(errorMessage = result.message, isLoading = false)
-                }
-                is WorkListResult.Loading -> {}
+            try {
+                val tasksList = getTasksUseCase()
+                _tasks.value = tasksList
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки: ${e.message}"
+                // В случае ошибки показываем мок-данные
+                loadMockTasks()
+            } finally {
+                _loading.value = false
             }
         }
     }
 
-    // ЗАГЛУШКА
-    private fun loadInitialData() {
+    fun createTask(carId: Int, job: String, comment: String?) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value?.copy(isLoading = true)
-
-            when (val result = getAllTasksUseCase()) {
-                is TaskResult.Success -> {
-                    allTasks.clear()
-                    allTasks.addAll(result.data)
-
-                    loadUserWorkList()
-
-                    applyFilterAndSearch()
-                    _uiState.value = _uiState.value?.copy(isLoading = false)
+            try {
+                val success = createTaskUseCase(carId, job, comment)
+                if (success) {
+                    loadTasks() // Обновляем список
+                } else {
+                    _error.value = "Не удалось создать задачу"
                 }
-                is TaskResult.Error -> {
-                    _uiState.value = _uiState.value?.copy(
-                        errorMessage = result.message,
-                        isLoading = false
-                    )
-                } else -> { }
+            } catch (e: Exception) {
+                _error.value = "Ошибка: ${e.message}"
             }
         }
     }
 
-    fun onRemovingFromWorkList(taskId: Int) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value?.copy(isLoading = true)
-
-            when (val result = removeFromWorkListUseCase(currentUserId, taskId)) {
-                is WorkListResult.Success -> loadUserWorkList()
-                is WorkListResult.Error -> {
-                    _uiState.value = _uiState.value?.copy(errorMessage = result.message, isLoading = false)
-                }
-                is WorkListResult.Loading -> {}
-            }
-        }
-    }
-
-    private suspend fun loadUserWorkList() {
-        when (val result = getWorkListItemsUseCase(currentUserId)) {
-            is WorkListResult.Success -> {
-                userWorkListItems.clear()
-                userWorkListItems.addAll(result.data)
-                applyFilterAndSearch()
-            }
-            is WorkListResult.Error -> _uiState.value = _uiState.value?.copy(errorMessage = result.message)
-            is WorkListResult.Loading -> _uiState.value = _uiState.value?.copy(isLoading = true)
-        }
-    }
-
-    //заглушка
-//    private fun loadTasksFromRepository() {
-//        viewModelScope.launch {
-//            _uiState.value = _uiState.value?.copy(isLoading = true)
-//
-//            when (val result = getAllTasksUseCase()) { // suspend operator fun может быть вызвана из Корутин или из suspend fun
-//                is TaskResult.Success -> {
-//                    allTasks.clear()
-//                    allTasks.addAll(result.data)
-//                    applyFilterAndSearch()
-//                    _uiState.value = _uiState.value?.copy(isLoading = false)
-//                }
-//                is TaskResult.Error -> {
-//                    _uiState.value = _uiState.value?.copy(
-//                        errorMessage = result.message,
-//                        isLoading = false
-//                    )
-//                }
-//                is TaskResult.Loading -> null
-//            }
-//        }
-//    }
-
-    private fun applyFilterAndSearch() {
-        val state = _uiState.value
-        var filteredTasks = allTasks
-
-        // применяем поиск
-        /*if (state.searchQuery.isNotBlank()) {
-            filteredTasks = filteredTasks.filter { task ->
-                task.job.startsWith(state.searchQuery)
-            }.toMutableList()
-        }
-
-        // применяем выбранный фильтр
-        filteredTasks = when (state.selectedFilter) {
-            TaskFilter.NONE -> filteredTasks
-            TaskFilter.PRICE_LOW_TO_HIGH -> filteredTasks.sortedBy { task -> task.price }.toMutableList()
-            TaskFilter.PRICE_HIGH_TO_LOW -> filteredTasks.sortedByDescending { task -> task.price }.toMutableList()
-            TaskFilter.NAME_A_TO_Z -> filteredTasks.sortedBy { task -> task.name }.toMutableList()
-            TaskFilter.NAME_Z_TO_A -> filteredTasks.sortedByDescending { task -> task.name }.toMutableList()
-        }*/
-
-        // создаем ui для модели
-        val catalogueUiItems = filteredTasks.map {
-                task -> WorkListUiItem(
-            task
+    private fun loadMockTasks() {
+        _tasks.value = listOf(
+            Task(1, "BMW X5 к321нр36", "Замена масла", "Масло 5w30, фильтр HU9254x"),
+            Task(2, "Audi A4 e567кх78", "Диагностика подвески", "Стук спереди на неровностях"),
+            Task(3, "Kia Sportage а123вр77", "Замена тормозных колодок", "Передние колодки, диски в норме")
         )
-        }
-
-        _uiState.value = state?.copy(
-            workListUiItems=catalogueUiItems,
-            isLoading = false
-        ) ?: WorkListUiState (workListUiItems = catalogueUiItems)
     }
-}
-
-enum class TaskFilter {
-    NONE,
-    PRICE_LOW_TO_HIGH,
-    PRICE_HIGH_TO_LOW,
-    NAME_A_TO_Z,
-    NAME_Z_TO_A
 }

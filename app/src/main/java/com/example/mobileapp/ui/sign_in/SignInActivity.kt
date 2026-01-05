@@ -73,8 +73,8 @@ class SignInActivity : AppCompatActivity() {
 
     private fun updateUI(state: SignInViewModel.SignInUiState) {
         //binding.progressBar.isVisible = state.isLoading
-        //binding.btnSignIn.isEnabled = !state.isLoading
-        //binding.btnSignIn.text = if (state.isLoading) "Loading..." else getString(R.string.sign_in)
+        binding.btnSignIn.isEnabled = !state.isLoading
+        binding.btnSignIn.text = if (state.isLoading) "Loading..." else getString(R.string.sign_in)
 
         state.errorMessage?.let { message ->
             Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
@@ -89,7 +89,8 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-
+        val intent = Intent(this, MainMenuActivity::class.java)
+        startActivity(intent)
     }
 
     /*private fun allInputsAreValid(): Boolean {

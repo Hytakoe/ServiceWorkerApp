@@ -7,7 +7,9 @@ import com.example.mobileapp.data.repository.TaskRepositoryImpl
 import com.example.mobileapp.data.repository.WorkListRepository
 import com.example.mobileapp.data.repository.WorkListRepositoryImpl
 import com.example.mobileapp.domain.usecase.AddToWorkListUseCase
-import com.example.mobileapp.domain.usecase.GetAllTasksUseCase
+import com.example.mobileapp.domain.usecase.CompleteTaskUseCase
+import com.example.mobileapp.domain.usecase.CreateTaskUseCase
+import com.example.mobileapp.domain.usecase.GetTasksUseCase
 import com.example.mobileapp.domain.usecase.GetWorkListItemsUseCase
 import com.example.mobileapp.domain.usecase.RemoveFromWorkListUseCase
 import com.example.mobileapp.domain.usecase.SignInUseCase
@@ -25,20 +27,19 @@ class AppModule {
         single<WorkListRepository> { WorkListRepositoryImpl(taskRepository = get()) }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
-        factory { GetAllTasksUseCase(taskRepository = get()) }
         factory { GetWorkListItemsUseCase(workListRepository = get()) }
         factory { AddToWorkListUseCase(workListRepository = get()) }
         factory { RemoveFromWorkListUseCase(workListRepository = get()) }
+        factory { CreateTaskUseCase(get()) }
+        factory { CompleteTaskUseCase(get()) }
+        factory { GetTasksUseCase(get()) }
 
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
         viewModel {
             WorkListViewModel(
-                getAllTasksUseCase = get(),
-                addToWorkListUseCase = get(),
-                removeFromWorkListUseCase = get(),
-                getWorkListItemsUseCase = get(),
-                currentUserId = 1
+                getTasksUseCase = get(),
+                createTaskUseCase = get()
             )
         }
     }

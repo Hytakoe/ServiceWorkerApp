@@ -6,15 +6,8 @@
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/cardview_light_background"
-        app:layout_goneMarginTop="15dp"
-        app:layout_goneMarginBottom="5dp"
-        app:layout_goneMarginStart="8dp"
-        app:layout_goneMarginEnd="8dp"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,7 +15,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="96dp">
+            android:layout_height="96dp"
+            android:background="@drawable/background_rounded"
+            android:backgroundTint="#E6E6FA"
+            android:layout_margin="5dp">
 
             <ImageView
                 android:id="@+id/imageView"
