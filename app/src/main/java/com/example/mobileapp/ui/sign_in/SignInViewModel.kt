@@ -1,86 +1,125 @@
+// ui/sign_in/SignInViewModel.kt
 package com.example.mobileapp.ui.sign_in
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobileapp.data.model.AuthResult
+import com.example.mobileapp.data.model.AuthResult.*
 import com.example.mobileapp.domain.usecase.SignInUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class SignInViewModel(private val signInUseCase: SignInUseCase) : ViewModel() {
-    private val _uiState = MutableLiveData(SignInUiState())
-    val uiState: LiveData<SignInUiState> = _uiState
+class SignInViewModel(
+    private val signInUseCase: SignInUseCase
+) : ViewModel() {
 
+    // UI State
     data class SignInUiState(
         val name: String = "",
         val surname: String = "",
         val password: String = "",
+        val nameError: String? = null,
+        val surnameError: String? = null,
+        val passwordError: String? = null,
         val isLoading: Boolean = false,
-        val errorMessage: String? = null,
-        val isSignInSuccess: Boolean = false
+        val isSignInSuccess: Boolean = false,
+        val errorMessage: String? = null
     )
 
+    private val _uiState = MutableStateFlow(SignInUiState())
+    val uiState = _uiState.asStateFlow()
+
+    // Auth State
+    private val _authState = MutableStateFlow<AuthResult<Unit>?>(null)
+    val authState = _authState.asStateFlow()
+
+    private val _loading = MutableStateFlow(false)
+    val loading = _loading.asStateFlow()
+
+    // Actions
     fun onNameChanged(name: String) {
-        _uiState.value = _uiState.value?.copy(
-            name = name,
-            errorMessage = null  // Очищаем ошибку при изменении
-        )
+        _uiState.value = _uiState.value.copy(name = name)
     }
+
     fun onSurameChanged(surname: String) {
-        _uiState.value = _uiState.value?.copy(
-            surname = surname,
-            errorMessage = null  // Очищаем ошибку при изменении
-        )
+        _uiState.value = _uiState.value.copy(surname = surname)
     }
 
     fun onPasswordChanged(password: String) {
-        _uiState.value = _uiState.value?.copy(
-            password = password,
-            errorMessage = null  // Очищаем ошибку при изменении
-        )
+        _uiState.value = _uiState.value.copy(password = password)
     }
 
     fun onSignInClicked() {
-        // Устанавливаем состояние загрузки
-        _uiState.value = _uiState.value?.copy(
-            isLoading = true,
-            errorMessage = null,
-            isSignInSuccess = false
-        )
+        val currentState = _uiState.value
 
+        // Валидация
+        val errors = mutableListOf<String>()
+
+        if (currentState.name.isBlank()) {
+            _uiState.value = currentState.copy(nameError = "Введите имя")
+            errors.add("Имя обязательно")
+        }
+
+        if (currentState.surname.isBlank()) {
+            _uiState.value = currentState.copy(surnameError = "Введите фамилию")
+            errors.add("Фамилия обязательна")
+        }
+
+        if (currentState.password.isBlank()) {
+            _uiState.value = currentState.copy(passwordError = "Введите пароль")
+            errors.add("Пароль обязателен")
+        } else if (currentState.password.length < 5) {
+            _uiState.value = currentState.copy(passwordError = "Пароль должен быть минимум 5 символов")
+            errors.add("Пароль слишком короткий")
+        }
+
+        if (errors.isNotEmpty()) {
+            return
+        }
+
+        // Вызов UseCase для аутентификации
+        signIn(currentState.name, currentState.surname, currentState.password)
+    }
+
+    private fun signIn(name: String, surname: String, password: String) {
         viewModelScope.launch {
-            val result = signInUseCase(
-                _uiState.value?.name ?: "",
-                _uiState.value?.surname ?: "",
-                _uiState.value?.password ?: ""
-            )
+            _loading.value = true
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
-            // Обновляем состояние на основе результата
-            _uiState.value = when (result) {
+            val result = signInUseCase(name, surname, password)
+
+            _loading.value = false
+            _uiState.value = _uiState.value.copy(isLoading = false)
+
+            when (result) {
                 is AuthResult.Success -> {
-                    _uiState.value?.copy(
-                        isLoading = false,
-                        isSignInSuccess = true
-                    )
+                    _uiState.value = _uiState.value.copy(isSignInSuccess = true)
+                    _authState.value = Success(Unit)
                 }
                 is AuthResult.Error -> {
-                    _uiState.value?.copy(
-                        isLoading = false,
-                        errorMessage = result.message
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = result.message,
+                        isSignInSuccess = false
                     )
+                    _authState.value = Error(result.message)
                 }
-                else -> _uiState.value?.copy(isLoading = false)
+
+                AuthResult.Loading -> TODO()
             }
         }
     }
 
-    // Дополнительные методы для управления состоянием
     fun clearError() {
-        _uiState.value = _uiState.value?.copy(errorMessage = null)
+        _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 
     fun resetSuccessState() {
-        _uiState.value = _uiState.value?.copy(isSignInSuccess = false)
+        _uiState.value = _uiState.value.copy(isSignInSuccess = false)
+    }
+
+    fun clearAuthState() {
+        _authState.value = null
     }
 }

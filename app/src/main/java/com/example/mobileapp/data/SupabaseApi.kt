@@ -1,4 +1,6 @@
 import com.example.mobileapp.data.model.Task
+import com.example.mobileapp.data.model.WorkerCredentials
+import com.example.mobileapp.data.model.WorkshopWorker
 import com.example.mobileapp.data.model.supabase.CarModelInfo
 import com.example.mobileapp.data.model.supabase.SupabaseCar
 import com.example.mobileapp.data.model.supabase.SupabaseTask
@@ -95,4 +97,43 @@ interface SupabaseApi {
         @Query("client_cars.license_plate") like: String,
         @Query("select") select: String = "*,client_cars(*)"
     ): List<SupabaseTask>
+
+    // Поиск сотрудника по имени и фамилии - ПРАВИЛЬНЫЙ формат
+    @GET("workshop_worker")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun findWorkerByName(
+        @Query("name") name: String,
+        @Query("surname") surname: String
+    ): List<WorkshopWorker>
+
+    // ИЛИ используйте фильтрацию через or
+    @GET("workshop_worker")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun findWorker(
+        @Query("name") name: String,
+        @Query("surname") surname: String
+    ): List<WorkshopWorker>
+
+    @GET("worker_credentials")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun getCredentialsByWorkerId(
+        @Query("id_worker") workerIdEq: Int  // Должен быть String
+    ): List<WorkerCredentials>
+
+    // ДЛЯ ТЕСТИРОВАНИЯ: получить всех сотрудников
+    @GET("workshop_worker")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun getAllWorkers(): List<WorkshopWorker>
 }

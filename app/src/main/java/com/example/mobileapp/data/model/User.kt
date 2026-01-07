@@ -1,7 +1,46 @@
+// data/model/User.kt
 package com.example.mobileapp.data.model
 
-data class User (
+import com.google.gson.annotations.SerializedName
+
+data class User(
     val id: Int,
-    val password: String,
-    val email: String
+    val name: String,
+    val surname: String,
+    val title: String,  // Должность
+    val phoneNumber: String? = null,
+    val email: String? = null
+)
+
+// Модель для данных из таблицы workshop_worker
+data class WorkshopWorker(
+    @SerializedName("id_worker")
+    val id: Int,
+
+    @SerializedName("full_name")
+    val fullName: String,
+
+    @SerializedName("name")
+    val name: String,
+
+    @SerializedName("surname")
+    val surname: String,
+
+    @SerializedName("phone_number")
+    val phoneNumber: String,
+
+    @SerializedName("title")
+    val title: String, // Должность
+
+    @SerializedName("salary")
+    val salary: Int,
+
+    @SerializedName("hire_date")
+    val hireDate: String,
+
+    @SerializedName("schedule")
+    val schedule: String,
+
+    @SerializedName("fire_date")
+    val fireDate: String? = null // null если не уволен
 )

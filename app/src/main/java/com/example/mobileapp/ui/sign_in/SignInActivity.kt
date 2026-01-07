@@ -5,12 +5,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.example.mobileapp.R
+import com.example.mobileapp.data.model.AuthResult
 import com.example.mobileapp.databinding.ActivitySignInBinding
 import com.example.mobileapp.ui.main_menu.MainMenuActivity
 import com.example.mobileapp.ui.sign_up.SignUpActivity
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SignInActivity : AppCompatActivity() {
@@ -18,106 +23,152 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignInBinding
     private val viewModel: SignInViewModel by viewModel()
 
-    private val INTENT_USER_EMAIL = "UserEmail"
-
     @SuppressLint("ServiceCast", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //binding.tILEmail.errorIconDrawable = null
+        // Убираем иконки ошибок
         binding.tilName.errorIconDrawable = null
         binding.tilSurame.errorIconDrawable = null
         binding.tilPassword.errorIconDrawable = null
-        //binding.tILEmail.editText?.setText(intent.getStringExtra(INTENT_USER_EMAIL) ?: "")
 
+        // Кнопка перехода к регистрации
         binding.btnGoToRegistration.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
-            val userName = binding.tilName.editText?.text.toString()
-            //if (Utils.Companion.isEmailValid(userEmail) && !Utils.Companion.isEmailInDB(userEmail)) intent.putExtra(INTENT_USER_EMAIL, userEmail)
-            startActivity(intent)
-        }
-        binding.btnSignIn.setOnClickListener {
-            val intent = Intent(this, MainMenuActivity::class.java)
-            val userName = binding.tilName.editText?.text.toString()
-            //if (Utils.Companion.isEmailValid(userEmail) && !Utils.Companion.isEmailInDB(userEmail)) intent.putExtra(INTENT_USER_EMAIL, userEmail)
             startActivity(intent)
         }
 
+        // Скрытие клавиатуры при клике вне полей ввода
         binding.main.setOnTouchListener { view, event ->
             currentFocus?.clearFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.main.windowToken, 0)
+            false
         }
 
-        viewModel.uiState.observe(this) { state ->
-            updateUI(state)
-        }
+        // Наблюдаем за состоянием ViewModel
+        setupObservers()
 
-        binding.tilName.editText?.doAfterTextChanged {
-                text -> viewModel.onNameChanged(text.toString())
-        }
-        binding.tilSurame.editText?.doAfterTextChanged {
-                text -> viewModel.onSurameChanged(text.toString())
-        }
+        // Слушатели изменений текста
+        setupTextWatchers()
 
-        binding.tilPassword.editText?.doAfterTextChanged {
-                text -> viewModel.onPasswordChanged(text.toString())
-        }
-
+        // Кнопка входа
         binding.btnSignIn.setOnClickListener {
             viewModel.onSignInClicked()
         }
     }
 
+    private fun setupObservers() {
+        // Наблюдаем за UI состоянием через StateFlow.collect
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                updateUI(state)
+            }
+        }
+
+        // Наблюдаем за результатом аутентификации
+        lifecycleScope.launch {
+            viewModel.authState.collect { result ->
+                result?.let {
+                    when (it) {
+                        is AuthResult.Success -> {
+                            // Успешный вход, переходим на главный экран
+                            navigateToMain()
+                            viewModel.clearAuthState() // Сбрасываем состояние
+                        }
+                        is AuthResult.Error -> {
+                            // Показываем ошибку
+                            showError(it.message)
+                            viewModel.clearAuthState() // Сбрасываем состояние
+                        }
+
+                        AuthResult.Loading -> TODO()
+                    }
+                }
+            }
+        }
+
+        // Наблюдаем за состоянием загрузки
+        lifecycleScope.launch {
+            viewModel.loading.collect { isLoading ->
+                binding.progressBar.isVisible = isLoading
+                binding.btnSignIn.isEnabled = !isLoading
+                binding.btnSignIn.text = if (isLoading) "Загрузка..." else getString(R.string.sign_in)
+            }
+        }
+    }
+
+    private fun setupTextWatchers() {
+        binding.tilName.editText?.doAfterTextChanged { text ->
+            viewModel.onNameChanged(text.toString())
+            clearNameError()
+        }
+
+        binding.tilSurame.editText?.doAfterTextChanged { text ->
+            viewModel.onSurameChanged(text.toString())
+            clearSurnameError()
+        }
+
+        binding.tilPassword.editText?.doAfterTextChanged { text ->
+            viewModel.onPasswordChanged(text.toString())
+            clearPasswordError()
+        }
+    }
+
     private fun updateUI(state: SignInViewModel.SignInUiState) {
-        //binding.progressBar.isVisible = state.isLoading
-        binding.btnSignIn.isEnabled = !state.isLoading
-        binding.btnSignIn.text = if (state.isLoading) "Loading..." else getString(R.string.sign_in)
-
-        state.errorMessage?.let { message ->
-            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-            // После показа ошибки можно очистить ее
-            viewModel.clearError()
+        // Показываем ошибки валидации
+        state.nameError?.let {
+            binding.tilName.error = it
+        } ?: run {
+            clearNameError()
         }
 
-        if (state.isSignInSuccess) {
-            navigateToMain()
-            viewModel.resetSuccessState()  // Сбрасываем флаг успеха
+        state.surnameError?.let {
+            binding.tilSurame.error = it
+        } ?: run {
+            clearSurnameError()
         }
+
+        state.passwordError?.let {
+            binding.tilPassword.error = it
+        } ?: run {
+            clearPasswordError()
+        }
+
+        // Показываем общие ошибки
+        state.errorMessage?.let {
+            showError(it)
+            // Очищаем ошибку после показа
+            lifecycleScope.launch {
+                viewModel.clearError()
+            }
+        }
+    }
+
+    private fun clearNameError() {
+        binding.tilName.error = null
+        binding.tilName.isErrorEnabled = false
+    }
+
+    private fun clearSurnameError() {
+        binding.tilSurame.error = null
+        binding.tilSurame.isErrorEnabled = false
+    }
+
+    private fun clearPasswordError() {
+        binding.tilPassword.error = null
+        binding.tilPassword.isErrorEnabled = false
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun navigateToMain() {
         val intent = Intent(this, MainMenuActivity::class.java)
         startActivity(intent)
+        finish() // Закрываем экран входа
     }
-
-    /*private fun allInputsAreValid(): Boolean {
-        var noErrors = true
-        // сначала проверяется корректность написания эл. почты (ошибка только у email)
-        if (!Utils.Companion.isEmailValid(binding.tILEmail.editText?.text.toString())) {
-            noErrors = false
-            binding.tILEmail.error = getString(R.string.wrong_email_format)
-            binding.tILPassword.isErrorEnabled = false
-        }
-        // затем проверяется наличие эл. почты в БД
-        else if (!Utils.Companion.isEmailInDB(binding.tILEmail.editText?.text.toString())){
-            noErrors = false
-            binding.tILEmail.error = getString(R.string.email_not_in_DB)
-            binding.tILPassword.isErrorEnabled = false
-        }
-        // в конце проверяется совпадение hash'а пароля в БД по почте
-        else if (!Utils.Companion.isEmailInDB(binding.tILEmail.editText?.text.toString())) {
-            noErrors = false
-            binding.tILEmail.error = getString(R.string.wrong_email_or_password)
-            binding.tILPassword.error = getString(R.string.wrong_email_or_password)
-        }
-        // если все верно, то ошибки предыдущих нажатий убираются
-        else {
-            binding.tILEmail.isErrorEnabled = false
-            binding.tILPassword.isErrorEnabled = false
-        }
-        return noErrors
-    }*/
 }

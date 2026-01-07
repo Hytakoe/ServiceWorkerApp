@@ -1,6 +1,7 @@
 package com.example.mobileapp.data
 
 import SupabaseApi
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -12,16 +13,20 @@ object RetrofitClient {
     // Для эмулятора Android
     private const val BASE_URL = "http://10.0.2.2:54321/rest/v1/"
 
+    // RetrofitClient.kt
     private val client: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.HEADERS // Или Level.BODY для полного лога
         }
 
         OkHttpClient.Builder()
             .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                Log.d("Retrofit", "Запрос: ${request.url}")
+                Log.d("Retrofit", "Заголовки: ${request.headers}")
+                chain.proceed(request)
+            }
             .build()
     }
 
@@ -36,4 +41,8 @@ object RetrofitClient {
     val api: SupabaseApi by lazy {
         retrofit.create(SupabaseApi::class.java)
     }
+    val authApi: AuthApi by lazy {
+        retrofit.create(AuthApi::class.java)
+    }
+
 }

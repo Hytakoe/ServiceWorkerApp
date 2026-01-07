@@ -1,28 +1,24 @@
+// ui/sign_up/SignUpActivity.kt (если есть)
 package com.example.mobileapp.ui.sign_up
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
-import com.example.mobileapp.R
-import com.example.mobileapp.databinding.ActivitySignInBinding
+import androidx.lifecycle.lifecycleScope
+import com.example.mobileapp.data.model.AuthResult
 import com.example.mobileapp.databinding.ActivitySignUpBinding
 import com.example.mobileapp.ui.sign_in.SignInActivity
-import com.example.mobileapp.ui.sign_in.SignInViewModel
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
     private val viewModel: SignUpViewModel by viewModel()
-
-    private val INTENT_USER_EMAIL = "UserEmail"
 
     @SuppressLint("ServiceCast", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,63 +26,99 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Убираем иконки ошибок
         binding.tilName.errorIconDrawable = null
         binding.tilSurame.errorIconDrawable = null
-        binding.tilEmail.editText?.setText(intent.getStringExtra(INTENT_USER_EMAIL) ?: "")
+        binding.tilEmail.errorIconDrawable = null
         binding.tilPhoneNumber.errorIconDrawable = null
         binding.tilPassword.errorIconDrawable = null
 
+        // Кнопка перехода к входу
         binding.btnGoToLogin.setOnClickListener {
             val intent = Intent(this, SignInActivity::class.java)
-            val userName = binding.tilName.editText?.text.toString()
-            //if (Utils.Companion.isEmailValid(userEmail) && !Utils.Companion.isEmailInDB(userEmail)) intent.putExtra(INTENT_USER_EMAIL, userEmail)
             startActivity(intent)
+            finish()
         }
 
+        // Кнопка регистрации
+        binding.btnSignUp.setOnClickListener {
+            val name = binding.tilName.editText?.text.toString().trim()
+            val surname = binding.tilSurame.editText?.text.toString().trim()
+            val email = binding.tilEmail.editText?.text.toString().trim()
+            val phoneNumber = binding.tilPhoneNumber.editText?.text.toString().trim()
+            val password = binding.tilPassword.editText?.text.toString()
+
+            if (validateInput(name, surname, email, phoneNumber, password)) {
+                lifecycleScope.launch {
+                    val result = viewModel.signUp(name, surname, phoneNumber, email, password)
+
+                    when (result) {
+                        is AuthResult.Success -> {
+                            Snackbar.make(binding.root, "Регистрация успешна!", Snackbar.LENGTH_SHORT).show()
+                            // Переход на главный экран или вход
+                            val intent = Intent(this@SignUpActivity, SignInActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                        is AuthResult.Error -> {
+                            Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                        }
+
+                        AuthResult.Loading -> TODO()
+                    }
+                }
+            }
+        }
+
+        // Скрытие клавиатуры при клике вне полей
         binding.main.setOnTouchListener { view, event ->
             currentFocus?.clearFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.main.windowToken, 0)
-        }
-
-        viewModel.uiState.observe(this) { state ->
-            updateUI(state)
-        }
-
-        binding.tilName.editText?.doAfterTextChanged {
-                text -> viewModel.onNameChanged(text.toString())
-        }
-        binding.tilSurame.editText?.doAfterTextChanged {
-                text -> viewModel.onSurameChanged(text.toString())
-        }
-
-        binding.tilPassword.editText?.doAfterTextChanged {
-                text -> viewModel.onPasswordChanged(text.toString())
-        }
-
-        binding.btnSignUp.setOnClickListener {
-            viewModel.onSignUpClicked()
+            false
         }
     }
 
-    private fun updateUI(state: SignUpViewModel.SignUpUiState) {
-        //binding.progressBar.isVisible = state.isLoading
-        binding.btnSignUp.isEnabled = !state.isLoading
-        binding.btnSignUp.text = if (state.isLoading) "Loading..." else getString(R.string.sign_up)
+    private fun validateInput(
+        name: String,
+        surname: String,
+        email: String,
+        phoneNumber: String,
+        password: String
+    ): Boolean {
+        var isValid = true
 
-        state.errorMessage?.let { message ->
-            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-            // После показа ошибки можно очистить ее
-            viewModel.clearError()
+        if (name.isEmpty()) {
+            binding.tilName.error = "Введите имя"
+            isValid = false
+        } else {
+            binding.tilName.error = null
         }
 
-        if (state.isSignUpSuccess) {
-            navigateToMain()
-            viewModel.resetSuccessState()  // Сбрасываем флаг успеха
+        if (surname.isEmpty()) {
+            binding.tilSurame.error = "Введите фамилию"
+            isValid = false
+        } else {
+            binding.tilSurame.error = null
         }
-    }
 
-    private fun navigateToMain() {
+        if (email.isEmpty()) {
+            binding.tilEmail.error = "Введите email"
+            isValid = false
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.tilEmail.error = "Некорректный email"
+            isValid = false
+        } else {
+            binding.tilEmail.error = null
+        }
 
+        if (password.length < 5) {
+            binding.tilPassword.error = "Пароль минимум 5 символов"
+            isValid = false
+        } else {
+            binding.tilPassword.error = null
+        }
+
+        return isValid
     }
 }
