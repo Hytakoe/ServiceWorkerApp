@@ -8,6 +8,7 @@ data class SupabaseTask(
     @SerializedName("id_repair")
     val id: Int = 0,
 
+
     @SerializedName("id_car")
     val carId: Int = 0,
 
@@ -31,17 +32,13 @@ data class SupabaseTask(
 ) {
     // Преобразование в вашу модель Task
     fun toTask(): Task {
-        val carInfo = client_cars?.let { car ->
-            // Получаем модель авто из spr_cars (нужен отдельный запрос)
-            // Пока используем номер
-            "Авто #${car.id} (${car.licensePlate})"
-        } ?: "Авто #$carId"
-
+        // Преобразование в Task
         return Task(
             id = id,
-            carName = carInfo,
+            carName = "Авто #$carId", // или другая логика
             job = workResult,
-            comment = comment
+            comment = comment,
+            finishDate = finishDate
         )
     }
 }

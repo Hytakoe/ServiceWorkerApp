@@ -1,5 +1,6 @@
 package com.example.mobileapp.di
 
+import com.example.mobileapp.data.SessionManager
 import com.example.mobileapp.data.repository.AuthRepository
 import com.example.mobileapp.data.repository.AuthRepositoryImpl
 import com.example.mobileapp.data.repository.TaskRepository
@@ -25,6 +26,9 @@ class AppModule {
         single<AuthRepository> { AuthRepositoryImpl() }
         single<TaskRepository> { TaskRepositoryImpl() } // ДОБАВЬТЕ ЭТО
         single<WorkListRepository> { WorkListRepositoryImpl(taskRepository = get()) }
+        single {
+            SessionManager(get())  // Используем Context из предыдущей строки
+        }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
         factory { GetWorkListItemsUseCase(workListRepository = get()) }
@@ -34,12 +38,18 @@ class AppModule {
         factory { CompleteTaskUseCase(get()) }
         factory { GetTasksUseCase(get()) }
 
-        viewModel { SignInViewModel(get()) }
+        viewModel {
+            SignInViewModel(
+                signInUseCase = get(),
+                sessionManager = get()  // Добавляем SessionManager в ViewModel
+            )
+        }
         viewModel { SignUpViewModel(get()) }
         viewModel {
             WorkListViewModel(
                 getTasksUseCase = get(),
-                createTaskUseCase = get()
+                createTaskUseCase = get(),
+                sessionManager = get()
             )
         }
     }

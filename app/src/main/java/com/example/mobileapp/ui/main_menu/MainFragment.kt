@@ -10,8 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobileapp.databinding.FragmentMainBinding
-import com.example.mobileapp.ui.work_list.WorkListViewModel
 import com.example.mobileapp.ui.workList.TaskAdapter
+import com.example.mobileapp.ui.work_list.WorkListViewModel
 import com.example.mobileapp.ui.work_list.WorkListUiItem
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -64,33 +64,37 @@ class MainFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        // Для StateFlow используем lifecycleScope.collect
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.tasks.collect { tasks ->
+                Log.d("MainFragment", "🔄 Обновление UI с ${tasks.size} задачами")
+
                 // Преобразуем Task в WorkListUiItem
                 val uiItems = tasks.map { task ->
                     WorkListUiItem(task)
                 }
-                // Обновляем адаптер с полученными задачами
                 myAdapter.submitList(uiItems)
-                Log.d("MainFragment", "Tasks updated: ${tasks.size}")
+
+                //binding.emptyView.isVisible = tasks.isEmpty()
+
+                // Для отладки выводим задачи
+                if (tasks.isNotEmpty()) {
+                    tasks.forEachIndexed { index, task ->
+                        Log.d("MainFragment", "   Задача $index: ${task.id} - ${task.carName}")
+                    }
+                } else {
+                    Log.d("MainFragment", "   Нет задач для отображения")
+                }
             }
         }
 
-        // Наблюдаем за состоянием загрузки
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.loading.collect { isLoading ->
-                // Показываем/скрываем прогресс (если есть ProgressBar в layout)
-                // Если нет ProgressBar - можно не добавлять
-                Log.d("MainFragment", "Loading: $isLoading")
-            }
-        }
-
-        // Наблюдаем за ошибками
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.error.collect { error ->
-                error?.let {
-                    showError(it)
+            viewModel.currentUser.collect { userName ->
+                userName?.let {
+                    Log.d("MainFragment", "👤 Текущий пользователь: $it")
+                    //binding.tvWelcome.text = "Добро пожаловать, $it!"
+                } ?: run {
+                    Log.d("MainFragment", "⚠️ Пользователь не авторизован")
+                    //binding.tvWelcome.text = "Не авторизован"
                 }
             }
         }

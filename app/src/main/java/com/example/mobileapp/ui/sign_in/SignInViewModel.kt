@@ -3,6 +3,7 @@ package com.example.mobileapp.ui.sign_in
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mobileapp.data.SessionManager
 import com.example.mobileapp.data.model.AuthResult
 import com.example.mobileapp.data.model.AuthResult.*
 import com.example.mobileapp.domain.usecase.SignInUseCase
@@ -12,7 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class SignInViewModel(
-    private val signInUseCase: SignInUseCase
+    private val signInUseCase: SignInUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     // UI State
@@ -94,11 +96,13 @@ class SignInViewModel(
             _uiState.value = _uiState.value.copy(isLoading = false)
 
             when (result) {
-                is AuthResult.Success -> {
+                is Success -> {
+                    // СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ В СЕССИИ
+                    sessionManager.saveUser(result.data)
                     _uiState.value = _uiState.value.copy(isSignInSuccess = true)
                     _authState.value = Success(Unit)
                 }
-                is AuthResult.Error -> {
+                is Error -> {
                     _uiState.value = _uiState.value.copy(
                         errorMessage = result.message,
                         isSignInSuccess = false
@@ -106,7 +110,7 @@ class SignInViewModel(
                     _authState.value = Error(result.message)
                 }
 
-                AuthResult.Loading -> TODO()
+                Loading -> TODO()
             }
         }
     }

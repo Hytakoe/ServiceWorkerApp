@@ -5,9 +5,11 @@ import com.example.mobileapp.data.model.Task
 import com.example.mobileapp.data.model.supabase.CarModelInfo
 
 interface TaskRepository {
-    suspend fun getTasks(): List<Task>
+    suspend fun getTasksForWorker(workerId: Int): List<Task>
+    suspend fun getTasks(): List<Task> // Старый метод для обратной совместимости
     suspend fun getTaskById(id: Int): Task?
-    suspend fun createTask(carId: Int, job: String, comment: String?): Boolean
+    suspend fun getAllTasks(): List<Task> // Для админа или отладки
+    suspend fun createTask(carId: Int, job: String, comment: String?, workerId: Int): Boolean
     suspend fun completeTask(taskId: Int): Boolean
-    suspend fun getCarModels(): Map<Int, CarModelInfo> // Кэш моделей авто
+    suspend fun getCarModels(): Map<Int, CarModelInfo>
 }

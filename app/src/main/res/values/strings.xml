@@ -9,6 +9,11 @@
     <string name="sign_in">Войти</string>
     <string name="go_sign_in">Перейти к входу</string>
     <string name="go_sign_up">Перейти к регистрации</string>
+    <string name="user_info_title">Информация о пользователе</string>
+    <string name="logout_button">Выйти из аккаунта</string>
+    <string name="not_logged_in">Не авторизован</string>
+    <string name="logout_success">Вы успешно вышли из аккаунта</string>
+    <string name="logout_error">Ошибка при выходе из аккаунта</string>
 
     <string-array name="car_names">
         <item name="bmw_x5">BMW X5 к321нр36</item>

@@ -1,3 +1,5 @@
+import com.example.mobileapp.data.model.RepairWithTask
+import com.example.mobileapp.data.model.RepairWorker
 import com.example.mobileapp.data.model.Task
 import com.example.mobileapp.data.model.WorkerCredentials
 import com.example.mobileapp.data.model.WorkshopWorker
@@ -136,4 +138,41 @@ interface SupabaseApi {
         "Authorization: Bearer $PUBLISHABLE_KEY"
     )
     suspend fun getAllWorkers(): List<WorkshopWorker>
+
+    @GET("repairs_workers")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun getRepairsWorkers(): List<RepairWorker>
+
+    // Получить задачи по ID сотрудника
+    @GET("repairs_workers")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun getRepairsByWorkerId(
+        @Query("id_worker") workerId: Int,
+        @Query("select") select: String = "*,repairs(*,client_cars(*))"
+    ): List<RepairWithTask>
+
+    // Создать новую связь (назначить задачу сотруднику)
+    @POST("repairs_workers")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY",
+        "Prefer: return=representation"
+    )
+    suspend fun assignTaskToWorker(@Body assignment: RepairWorker): List<RepairWorker>
+    @GET("repairs")
+    @Headers(
+        "apikey: $PUBLISHABLE_KEY",
+        "Authorization: Bearer $PUBLISHABLE_KEY"
+    )
+    suspend fun getRepairById(
+        @Query("id_repair") repairId: Int,
+        @Query("select") select: String = "*,client_cars(*)"
+    ): List<SupabaseTask>
+
 }

@@ -1,10 +1,11 @@
 package com.example.mobileapp.data.repository
 
 
-import com.example.mobileapp.data.RetrofitClient
+import android.util.Log
 import com.example.mobileapp.data.RetrofitClient.api
+import com.example.mobileapp.data.SessionManager
+import com.example.mobileapp.data.model.RepairWorker
 import com.example.mobileapp.data.model.Task
-import com.example.mobileapp.data.model.TaskResult
 import com.example.mobileapp.data.model.supabase.CarModelInfo
 import com.example.mobileapp.data.model.supabase.SupabaseCar
 import com.example.mobileapp.data.model.supabase.SupabaseTask
@@ -16,134 +17,109 @@ import java.util.Date
 import java.util.Locale
 
 class TaskRepositoryImpl: TaskRepository {
+
     //private val api = RetrofitClient.supabaseApi
+    private val sessionManager: SessionManager? = null  // Добавляем параметр, делаем optional
     private var carModelsCache: Map<Int, CarModelInfo> = emptyMap()
-    private val tasksMap = mutableMapOf<Int, Task>()/*.apply {
-        put(1, Task(1, "BMW X5 к321нр36", "Замена масла","Масло 5w30, фильтр HU9254x"))
-        put(2, Task(2, "Audi A4 e567кх78", "Диагностика подвески","Стук спереди на неровностях"))
-        put(3, Task(3, "Kia Sportage а123вр77", "Замена тормозных колодок","Передние колодки, диски в норме"))
-        put(4, Task(4, "Lada Vesta о444оо99", "ТО-2","Полное техническое обслуживание"))
-        put(5, Task(5, "Hyundai Creta с555ср50", "Ремонт кондиционера","Заправка фреоном, замена салонного фильтра"))
-        put(6, Task(6, "Mercedes GLC м666мм177", "Шиномонтаж","Сезонная замена резины"))
-        put(7, Task(7, "Toyota Camry т777ту78", "Замена свечей зажигания","Платина NGK BKR6EQUP"))
-        put(8, Task(8, "Volkswagen Tiguan в888вв79", "Обслуживание АКПП","Замена масла в коробке, фильтр OEM"))
-    }*/
 
-    /*override suspend fun getTaskById(TaskId: Int): TaskResult<Task> {
-        return try {
-            val Task = tasksMap[TaskId]
-            if (Task != null) {
-                TaskResult.Success(Task)
-            } else {
-                TaskResult.Error("Задача с id=${TaskId} не найден")
-            }
-        } catch (e: Exception) {
-            TaskResult.Error("Failed to get Tasks: ${e.message}")
-        }
-    }*/
-
-    /*override suspend fun getAllTasks(): TaskResult<List<Task>> {
-        return try {
-            TaskResult.Success(tasksMap.values.toList())
-        } catch (e: Exception) {
-            TaskResult.Error("Failed to get all Tasks: ${e.message}")
+    private fun getMockTasksForWorker(workerId: Int): List<Task> {
+        // Возвращаем мок-данные в зависимости от workerId
+        return when (workerId) {
+            1 -> listOf( // Ратмир Селютин
+                Task(1, "BMW X5 к321нр36", "Замена масла", "Масло 5w30, фильтр HU9254x"),
+                Task(3, "Kia Sportage а123вр77", "Замена тормозных колодок", "Передние колодки, диски в норме"),
+                Task(5, "Hyundai Creta с555ср50", "Ремонт кондиционера", "Заправка фреоном")
+            )
+            2 -> listOf( // Иван Иванов
+                Task(2, "Audi A4 e567кх78", "Диагностика подвески", "Стук спереди на неровностях"),
+                Task(6, "Mercedes GLC м666мм177", "Шиномонтаж", "Сезонная замена резины")
+            )
+            3 -> listOf( // Мария Петрова
+                Task(4, "Lada Vesta о444оо99", "ТО-2", "Полное техническое обслуживание"),
+                Task(7, "Toyota Camry т777ту78", "Замена свечей зажигания", "Платина NGK BKR6EQUP"),
+                Task(8, "Volkswagen Tiguan в888вв79", "Обслуживание АКПП", "Замена масла в коробке")
+            )
+            else -> getMockTasks() // Все задачи для неизвестного workerId
         }
     }
-    override suspend fun getTasksWithCars(): List<TaskWithCar> {
+    override suspend fun getTasksForWorker(workerId: Int): List<Task> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = api.getTasksWithCars()
-                if (response.isSuccessful) {
-                    response.body() ?: emptyList()
-                } else {
-                    emptyList()
+                Log.d("TaskRepository", "🔄 getTasksForWorker вызван для workerId: $workerId")
+
+                // 1. Получаем все связи
+                val allLinks = api.getRepairsWorkers()
+                Log.d("TaskRepository", "📋 Всего связей в repairs_workers: ${allLinks.size}")
+
+                // 2. Фильтруем по workerId
+                val workerLinks = allLinks.filter { it.workerId == workerId }
+                Log.d("TaskRepository", "🔗 Связей для workerId $workerId: ${workerLinks.size}")
+
+                if (workerLinks.isEmpty()) {
+                    Log.w("TaskRepository", "⚠️ Нет связей для workerId $workerId")
+                    return@withContext emptyList()
+                }
+
+                // 3. Получаем ID задач
+                val workerRepairIds = workerLinks.map { it.repairId }
+                Log.d("TaskRepository", "🔢 ID задач сотрудника: $workerRepairIds")
+
+                // 4. Получаем все задачи
+                val allRepairs = api.getRepairsWithCars()
+                Log.d("TaskRepository", "📊 Всего задач в системе: ${allRepairs.size}")
+
+                // 5. Фильтруем задачи сотрудника
+                val workerRepairs = allRepairs.filter { repair ->
+                    workerRepairIds.contains(repair.id)
+                }
+                Log.d("TaskRepository", "✅ Задач для сотрудника: ${workerRepairs.size}")
+
+                // 6. Преобразуем
+                val carModelsCache = getCarModels()
+                val tasks = workerRepairs.mapNotNull { repair ->
+                    try {
+                        repair.toTask(
+                            carModels = carModelsCache,
+                            carInfo = repair.client_cars
+                        )
+                    } catch (e: Exception) {
+                        Log.e("TaskRepository", "Ошибка преобразования задачи ${repair.id}", e)
+                        null
+                    }
+                }
+
+                Log.d("TaskRepository", "🎯 Итоговых задач: ${tasks.size}")
+                tasks
+
+            } catch (e: Exception) {
+                Log.e("TaskRepository", "💥 Ошибка getTasksForWorker: ${e.message}", e)
+                getMockTasksForWorker(workerId)
+            }
+        }
+    }
+
+    override suspend fun getAllTasks(): List<Task> {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Получаем все задачи (для админа или отладки)
+                val supabaseTasks = api.getRepairsWithCars()
+                val carModelsCache = getCarModels()
+
+                supabaseTasks.mapNotNull { supabaseTask ->
+                    try {
+                        supabaseTask.toTask(
+                            carModels = carModelsCache,
+                            carInfo = supabaseTask.client_cars
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            } as List<TaskWithCar>
-        }
-    }
-
-    override suspend fun getTaskById(id: Int): Task? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = api.getTaskById(id)
-                if (response.isSuccessful) {
-                    response.body()?.firstOrNull()
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+                getMockTasks()
             }
         }
     }
-
-    override suspend fun getTasksByCarId(carId: Int): List<Task> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = api.getTasksByCarId(carId)
-                if (response.isSuccessful) {
-                    response.body() ?: emptyList()
-                } else {
-                    emptyList()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
-        }
-    }
-
-    override suspend fun createTask(task: TaskRequest): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = api.createTask(task)
-                response.isSuccessful
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-    }
-
-    override suspend fun completeTask(taskId: Int): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val updates = mapOf(
-                    "date_of_finish" to getCurrentDateTime()
-                )
-                val response = api.updateTask(taskId, updates)
-                response.isSuccessful
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-    }
-
-    override suspend fun searchTasksByLicensePlate(licensePlate: String): List<TaskWithCar> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = api.searchTasksByLicensePlate(licensePlate)
-                if (response.isSuccessful) {
-                    response.body() ?: emptyList()
-                } else {
-                    emptyList()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
-        }
-    }
-
-    private fun getCurrentDateTime(): String {
-        return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-            .format(Date())
-    }*/
     override suspend fun getTasks(): List<Task> {
         return withContext(Dispatchers.IO) {
             try {
@@ -181,18 +157,28 @@ class TaskRepositoryImpl: TaskRepository {
         }
     }
 
-    override suspend fun createTask(carId: Int, job: String, comment: String?): Boolean {
+    override suspend fun createTask(carId: Int, job: String, comment: String?, workerId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val taskRequest = TaskRequest(
                     carId = carId,
                     job = job,
                     comment = comment,
-                    cost = 0 // Можно добавить поле стоимости позже
+                    cost = 0
                 )
 
                 val result = api.createRepair(taskRequest)
-                result.isNotEmpty()
+
+                // После создания задачи, нужно связать её с работником
+                if (result.isNotEmpty()) {
+                    val repairId = result.first().id
+                    // Добавляем связь в repairs_workers
+                    val assignment = RepairWorker(workerId, repairId)
+                    api.assignTaskToWorker(assignment)
+                    true
+                } else {
+                    false
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 false
@@ -247,6 +233,7 @@ class TaskRepositoryImpl: TaskRepository {
             Task(3, "Kia Sportage а123вр77", "Замена тормозных колодок", "Передние колодки, диски в норме")
         )
     }
+
 }
 
 // Расширение для преобразования SupabaseTask в Task
@@ -260,7 +247,8 @@ private fun SupabaseTask.toTask(
         id = id,
         carName = carName,
         job = workResult,
-        comment = comment
+        comment = comment,
+        finishDate = finishDate // Добавляем дату завершения
     )
 }
 

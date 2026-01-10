@@ -1,51 +1,63 @@
+// ui/workList/TaskAdapter.kt
 package com.example.mobileapp.ui.workList
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobileapp.R
-import com.example.mobileapp.data.model.Task
+import com.example.mobileapp.databinding.RvMainRowBinding
 import com.example.mobileapp.ui.work_list.WorkListUiItem
 
-class TaskAdapter (): ListAdapter<WorkListUiItem, TaskAdapter.TaskViewHolder>(TaskCallBack()) {
+class TaskAdapter(
+    private val onItemClick: (WorkListUiItem) -> Unit = {},
+    private val onCompleteClick: (Int) -> Unit = {}
+) : ListAdapter<WorkListUiItem, TaskAdapter.ViewHolder>(WorkListUiItemDiffCallback()) {
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.rv_main_row, parent, false)
-            return TaskViewHolder(view)
-        }
+    class ViewHolder(val binding: RvMainRowBinding) : RecyclerView.ViewHolder(binding.root)
 
-        override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-            holder.bind(getItem(position))
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = RvMainRowBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding)
+    }
 
-        inner class TaskViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-            private val ivTaskImage: ImageView = itemView.findViewById(R.id.imageView)
-            private val tvCar: TextView = itemView.findViewById(R.id.tvCarName)
-            private val tvJob: TextView = itemView.findViewById(R.id.tvJob)
-            private val tvComment: TextView = itemView.findViewById(R.id.tvComment)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val uiItem = getItem(position)
+        val task = uiItem.task
 
+        with(holder.binding) {
+            tvCarName.text = task.carName
+            tvJob.text = task.job
+            tvComment.text = task.comment ?: ""
 
-            fun bind(workListUiItem: WorkListUiItem) {
-                val task: Task = workListUiItem.task
+            // Проверяем дату завершения
+            val isCompleted = task.finishDate != null
 
-                tvCar.text = workListUiItem.task.carName
-                tvJob.text = workListUiItem.task.job
-                tvComment.text = workListUiItem.task.comment
+            if (isCompleted) {
+                // Показываем галочку
+                imageView.visibility = View.VISIBLE
+            } else {
+                // Скрываем галочку
+                imageView.visibility = View.GONE
             }
         }
+    }
+}
 
-        class TaskCallBack: DiffUtil.ItemCallback<WorkListUiItem>() {
-            override fun areItemsTheSame(oldItem: WorkListUiItem, newItem: WorkListUiItem): Boolean {
-                return oldItem.task.id == newItem.task.id
-            }
+class WorkListUiItemDiffCallback : DiffUtil.ItemCallback<WorkListUiItem>() {
+    override fun areItemsTheSame(oldItem: WorkListUiItem, newItem: WorkListUiItem): Boolean {
+        return oldItem.task.id == newItem.task.id
+    }
 
-            override fun areContentsTheSame(oldItem: WorkListUiItem, newItem: WorkListUiItem): Boolean {
-                return oldItem == newItem
-            }
-        }
+    override fun areContentsTheSame(oldItem: WorkListUiItem, newItem: WorkListUiItem): Boolean {
+        return oldItem.task == newItem.task &&
+                oldItem.task.finishDate == newItem.task.finishDate
+    }
 }
