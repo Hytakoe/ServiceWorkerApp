@@ -1,4 +1,3 @@
-// data/model/RepairWithTask.kt
 package com.example.mobileapp.data.model
 
 import com.example.mobileapp.data.model.supabase.SupabaseTask

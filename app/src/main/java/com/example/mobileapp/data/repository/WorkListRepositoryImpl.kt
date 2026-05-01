@@ -11,7 +11,6 @@ class WorkListRepositoryImpl(
 
     override suspend fun addToWorkList(userId: Int, taskId: Int): WorkListResult<Unit> {
         return try {
-            // Проверяем существует ли продукт
             val taskResult = taskRepository.getTaskById(taskId)
             if (taskResult is TaskResult.Success<*>) {
                 val currentQuantity = workListItems[taskId] ?: 0

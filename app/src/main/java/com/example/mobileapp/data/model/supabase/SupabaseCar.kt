@@ -2,7 +2,6 @@ package com.example.mobileapp.data.model.supabase
 
 import com.google.gson.annotations.SerializedName
 
-// Модель для данных из таблицы client_cars
 data class SupabaseCar(
     @SerializedName("id_car")
     val id: Int,

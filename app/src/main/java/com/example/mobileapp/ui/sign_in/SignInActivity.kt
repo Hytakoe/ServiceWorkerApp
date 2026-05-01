@@ -29,18 +29,15 @@ class SignInActivity : AppCompatActivity() {
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Убираем иконки ошибок
         binding.tilName.errorIconDrawable = null
         binding.tilSurame.errorIconDrawable = null
         binding.tilPassword.errorIconDrawable = null
 
-        // Кнопка перехода к регистрации
         binding.btnGoToRegistration.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
 
-        // Скрытие клавиатуры при клике вне полей ввода
         binding.main.setOnTouchListener { view, event ->
             currentFocus?.clearFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
@@ -48,49 +45,40 @@ class SignInActivity : AppCompatActivity() {
             false
         }
 
-        // Наблюдаем за состоянием ViewModel
         setupObservers()
 
-        // Слушатели изменений текста
         setupTextWatchers()
 
-        // Кнопка входа
         binding.btnSignIn.setOnClickListener {
             viewModel.onSignInClicked()
         }
     }
 
     private fun setupObservers() {
-        // Наблюдаем за UI состоянием через StateFlow.collect
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 updateUI(state)
             }
         }
 
-        // Наблюдаем за результатом аутентификации
         lifecycleScope.launch {
             viewModel.authState.collect { result ->
                 result?.let {
                     when (it) {
                         is AuthResult.Success -> {
-                            // Успешный вход, переходим на главный экран
                             navigateToMain()
-                            viewModel.clearAuthState() // Сбрасываем состояние
+                            viewModel.clearAuthState()
                         }
                         is AuthResult.Error -> {
-                            // Показываем ошибку
                             showError(it.message)
-                            viewModel.clearAuthState() // Сбрасываем состояние
+                            viewModel.clearAuthState()
                         }
-
                         AuthResult.Loading -> TODO()
                     }
                 }
             }
         }
 
-        // Наблюдаем за состоянием загрузки
         lifecycleScope.launch {
             viewModel.loading.collect { isLoading ->
                 binding.progressBar.isVisible = isLoading
@@ -118,7 +106,6 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun updateUI(state: SignInViewModel.SignInUiState) {
-        // Показываем ошибки валидации
         state.nameError?.let {
             binding.tilName.error = it
         } ?: run {
@@ -137,10 +124,8 @@ class SignInActivity : AppCompatActivity() {
             clearPasswordError()
         }
 
-        // Показываем общие ошибки
         state.errorMessage?.let {
             showError(it)
-            // Очищаем ошибку после показа
             lifecycleScope.launch {
                 viewModel.clearError()
             }
@@ -169,6 +154,6 @@ class SignInActivity : AppCompatActivity() {
     private fun navigateToMain() {
         val intent = Intent(this, MainMenuActivity::class.java)
         startActivity(intent)
-        finish() // Закрываем экран входа
+        finish()
     }
 }

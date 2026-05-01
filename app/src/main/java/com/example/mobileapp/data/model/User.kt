@@ -1,4 +1,3 @@
-// data/model/User.kt
 package com.example.mobileapp.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -12,7 +11,6 @@ data class User(
     val email: String? = null
 )
 
-// Модель для данных из таблицы workshop_worker
 data class WorkshopWorker(
     @SerializedName("id_worker")
     val id: Int,
@@ -42,5 +40,5 @@ data class WorkshopWorker(
     val schedule: String,
 
     @SerializedName("fire_date")
-    val fireDate: String? = null // null если не уволен
+    val fireDate: String? = null
 )

@@ -24,10 +24,10 @@ import org.koin.dsl.module
 class AppModule {
     val appModule = module {
         single<AuthRepository> { AuthRepositoryImpl() }
-        single<TaskRepository> { TaskRepositoryImpl() } // ДОБАВЬТЕ ЭТО
+        single<TaskRepository> { TaskRepositoryImpl() }
         single<WorkListRepository> { WorkListRepositoryImpl(taskRepository = get()) }
         single {
-            SessionManager(get())  // Используем Context из предыдущей строки
+            SessionManager(get())
         }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
@@ -41,7 +41,7 @@ class AppModule {
         viewModel {
             SignInViewModel(
                 signInUseCase = get(),
-                sessionManager = get()  // Добавляем SessionManager в ViewModel
+                sessionManager = get()
             )
         }
         viewModel { SignUpViewModel(get()) }

@@ -39,7 +39,6 @@ class MainFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
 
-        // Загружаем задачи при создании фрагмента
         viewModel.loadTasks()
     }
 
@@ -49,7 +48,6 @@ class MainFragment : Fragment() {
         Log.d("MainFragment", "Setting layout manager")
         val linearLayoutManager = LinearLayoutManager(requireContext())
 
-        // Создаем адаптер (без параметров, если ваш TaskAdapter так работает)
         myAdapter = TaskAdapter()
 
         rv.apply {
@@ -66,17 +64,13 @@ class MainFragment : Fragment() {
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.tasks.collect { tasks ->
-                Log.d("MainFragment", "🔄 Обновление UI с ${tasks.size} задачами")
+                Log.d("MainFragment", "Обновление UI с ${tasks.size} задачами")
 
-                // Преобразуем Task в WorkListUiItem
                 val uiItems = tasks.map { task ->
                     WorkListUiItem(task)
                 }
                 myAdapter.submitList(uiItems)
 
-                //binding.emptyView.isVisible = tasks.isEmpty()
-
-                // Для отладки выводим задачи
                 if (tasks.isNotEmpty()) {
                     tasks.forEachIndexed { index, task ->
                         Log.d("MainFragment", "   Задача $index: ${task.id} - ${task.carName}")
@@ -90,11 +84,9 @@ class MainFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.currentUser.collect { userName ->
                 userName?.let {
-                    Log.d("MainFragment", "👤 Текущий пользователь: $it")
-                    //binding.tvWelcome.text = "Добро пожаловать, $it!"
+                    Log.d("MainFragment", "Текущий пользователь: $it")
                 } ?: run {
-                    Log.d("MainFragment", "⚠️ Пользователь не авторизован")
-                    //binding.tvWelcome.text = "Не авторизован"
+                    Log.d("MainFragment", "Пользователь не авторизован")
                 }
             }
         }

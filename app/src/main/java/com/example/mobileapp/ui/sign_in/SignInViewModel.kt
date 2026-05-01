@@ -1,4 +1,3 @@
-// ui/sign_in/SignInViewModel.kt
 package com.example.mobileapp.ui.sign_in
 
 import androidx.lifecycle.ViewModel
@@ -17,7 +16,6 @@ class SignInViewModel(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    // UI State
     data class SignInUiState(
         val name: String = "",
         val surname: String = "",
@@ -33,14 +31,12 @@ class SignInViewModel(
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState = _uiState.asStateFlow()
 
-    // Auth State
     private val _authState = MutableStateFlow<AuthResult<Unit>?>(null)
     val authState = _authState.asStateFlow()
 
     private val _loading = MutableStateFlow(false)
     val loading = _loading.asStateFlow()
 
-    // Actions
     fun onNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(name = name)
     }
@@ -56,7 +52,6 @@ class SignInViewModel(
     fun onSignInClicked() {
         val currentState = _uiState.value
 
-        // Валидация
         val errors = mutableListOf<String>()
 
         if (currentState.name.isBlank()) {
@@ -81,7 +76,6 @@ class SignInViewModel(
             return
         }
 
-        // Вызов UseCase для аутентификации
         signIn(currentState.name, currentState.surname, currentState.password)
     }
 
@@ -97,7 +91,6 @@ class SignInViewModel(
 
             when (result) {
                 is Success -> {
-                    // СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ В СЕССИИ
                     sessionManager.saveUser(result.data)
                     _uiState.value = _uiState.value.copy(isSignInSuccess = true)
                     _authState.value = Success(Unit)

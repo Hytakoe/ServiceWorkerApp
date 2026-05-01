@@ -10,10 +10,7 @@ data class Task (
     @SerializedName("date_of_finish")
     val finishDate: String? = null
 ){
-    // Дополнительные поля для Supabase
     val issueDate: String? = null
     val cost: Int = 0
     val status: String = "В работе"
-
-
 }

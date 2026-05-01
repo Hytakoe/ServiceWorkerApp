@@ -1,4 +1,3 @@
-// data/model/RepairWorker.kt
 package com.example.mobileapp.data.model
 
 import com.google.gson.annotations.SerializedName

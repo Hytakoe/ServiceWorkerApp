@@ -34,23 +34,19 @@ class SettingsFragment : Fragment() {
 
         setupUserInfo()
         setupLogoutButton()
-        //setupClearDataButton()
     }
 
     private fun setupUserInfo() {
         val currentUser = sessionManager.getCurrentUser()
 
         if (currentUser != null) {
-            // Отображаем информацию о пользователе
             binding.tvUserName.text = "${currentUser.name} ${currentUser.surname}"
             binding.tvUserTitle.text = currentUser.title
             binding.tvUserId.text = "ID: ${currentUser.id}"
 
-            // Показываем блок с информацией
             binding.userInfoLayout.visibility = View.VISIBLE
             binding.tvNoUser.visibility = View.GONE
         } else {
-            // Пользователь не авторизован
             binding.userInfoLayout.visibility = View.GONE
             binding.tvNoUser.visibility = View.VISIBLE
             binding.btnLogout.text = "Войти"
@@ -62,7 +58,6 @@ class SettingsFragment : Fragment() {
             if (sessionManager.isLoggedIn()) {
                 showLogoutConfirmationDialog()
             } else {
-                // Если не авторизован, переход на экран входа
                 navigateToSignIn()
             }
         }
@@ -85,7 +80,6 @@ class SettingsFragment : Fragment() {
             .setTitle("Очистка кэша")
             .setMessage("Очистить кэш приложения? Это не затронет ваши данные на сервере.")
             .setPositiveButton("Очистить") { dialog, which ->
-                // Здесь можно добавить очистку кэша если нужно
                 com.example.mobileapp.ToastUtils.showToast(
                     requireContext(),
                     "Кэш очищен"
@@ -98,16 +92,13 @@ class SettingsFragment : Fragment() {
     private fun performLogout() {
         sessionManager.logout()
 
-        // Показать сообщение об успешном выходе
         com.example.mobileapp.ToastUtils.showToast(
             requireContext(),
             "Вы успешно вышли из аккаунта"
         )
 
-        // Обновить UI
         setupUserInfo()
 
-        // Перейти на экран входа
         navigateToSignIn()
     }
 

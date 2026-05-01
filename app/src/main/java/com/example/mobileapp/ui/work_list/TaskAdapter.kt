@@ -1,14 +1,11 @@
-// ui/workList/TaskAdapter.kt
 package com.example.mobileapp.ui.workList
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mobileapp.R
 import com.example.mobileapp.databinding.RvMainRowBinding
 import com.example.mobileapp.ui.work_list.WorkListUiItem
 
@@ -37,14 +34,11 @@ class TaskAdapter(
             tvJob.text = task.job
             tvComment.text = task.comment ?: ""
 
-            // Проверяем дату завершения
             val isCompleted = task.finishDate != null
 
             if (isCompleted) {
-                // Показываем галочку
                 imageView.visibility = View.VISIBLE
             } else {
-                // Скрываем галочку
                 imageView.visibility = View.GONE
             }
         }

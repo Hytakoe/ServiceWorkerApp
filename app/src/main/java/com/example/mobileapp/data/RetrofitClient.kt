@@ -10,13 +10,11 @@ import java.util.concurrent.TimeUnit
 
 
 object RetrofitClient {
-    // Для эмулятора Android
     private const val BASE_URL = "http://10.0.2.2:54321/rest/v1/"
 
-    // RetrofitClient.kt
     private val client: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.HEADERS // Или Level.BODY для полного лога
+            level = HttpLoggingInterceptor.Level.HEADERS
         }
 
         OkHttpClient.Builder()

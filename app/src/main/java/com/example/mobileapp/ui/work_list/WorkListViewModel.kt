@@ -52,7 +52,7 @@ class WorkListViewModel(
             return
         }
 
-        Log.d("WorkListViewModel", "🔄 Загружаем задачи для пользователя ID: $userId")
+        Log.d("WorkListViewModel", "Загружаем задачи для пользователя ID: $userId")
         loadTasksForUser(userId)
     }
 
@@ -62,19 +62,18 @@ class WorkListViewModel(
             _error.value = null
 
             try {
-                Log.d("WorkListViewModel", "📞 Вызываем useCase для workerId: $workerId")
+                Log.d("WorkListViewModel", "Вызываем useCase для workerId: $workerId")
                 val tasksList = getTasksUseCase(workerId)
-                Log.d("WorkListViewModel", "✅ Получено задач: ${tasksList.size}")
+                Log.d("WorkListViewModel", "Получено задач: ${tasksList.size}")
 
                 _tasks.value = tasksList
 
-                // Для отладки выводим задачи
                 tasksList.forEachIndexed { index, task ->
                     Log.d("WorkListViewModel", "   Задача $index: ${task.id} - ${task.carName}")
                 }
 
             } catch (e: Exception) {
-                Log.e("WorkListViewModel", "❌ Ошибка загрузки: ${e.message}", e)
+                Log.e("WorkListViewModel", "Ошибка загрузки: ${e.message}", e)
                 _error.value = "Ошибка загрузки задач: ${e.message}"
                 loadMockTasksForUser(workerId)
             } finally {
@@ -98,7 +97,7 @@ class WorkListViewModel(
 
                 val success = createTaskUseCase(carId, job, comment, cost)
                 if (success) {
-                    loadTasksForCurrentUser() // Обновляем список
+                    loadTasksForCurrentUser()
                 } else {
                     _error.value = "Не удалось создать задачу"
                 }
@@ -108,12 +107,8 @@ class WorkListViewModel(
         }
     }
 
-    fun completeTask(taskId: Int) {
-        // ... реализация завершения задачи
-    }
-
     private fun loadMockTasksForUser(workerId: Int) {
-        Log.d("WorkListViewModel", "🔄 Используем мок-данные для workerId: $workerId")
+        Log.d("WorkListViewModel", "Используем мок-данные для workerId: $workerId")
 
         val mockTasks = when (workerId) {
             1 -> listOf(
@@ -134,6 +129,6 @@ class WorkListViewModel(
         }
 
         _tasks.value = mockTasks
-        Log.d("WorkListViewModel", "📋 Загружено мок-задач: ${mockTasks.size}")
+        Log.d("WorkListViewModel", "Загружено мок-задач: ${mockTasks.size}")
     }
 }

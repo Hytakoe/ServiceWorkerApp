@@ -1,4 +1,3 @@
-// domain/usecase/SignInUseCase.kt
 package com.example.mobileapp.domain.usecase
 
 import com.example.mobileapp.data.model.AuthResult

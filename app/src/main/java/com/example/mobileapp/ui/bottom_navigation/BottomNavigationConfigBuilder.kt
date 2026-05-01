@@ -7,7 +7,6 @@ class BottomNavigationConfigBuilder {
     private var onItemClicked: (BottomNavigationSection) -> Unit = {}
     private var loader: MenuIconLoader = object : MenuIconLoader {
         override fun loadIcon(menuItem: MenuItem, url: String) {
-            // fallback implementation, ignore
         }
     }
     private val sections: MutableList<BottomNavigationSection> = mutableListOf()

@@ -1,4 +1,3 @@
-// data/SessionManager.kt
 package com.example.mobileapp.data
 
 import android.content.Context

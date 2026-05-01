@@ -1,4 +1,3 @@
-// ui/sign_up/SignUpActivity.kt (если есть)
 package com.example.mobileapp.ui.sign_up
 
 import android.annotation.SuppressLint
@@ -26,21 +25,18 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Убираем иконки ошибок
         binding.tilName.errorIconDrawable = null
         binding.tilSurame.errorIconDrawable = null
         binding.tilEmail.errorIconDrawable = null
         binding.tilPhoneNumber.errorIconDrawable = null
         binding.tilPassword.errorIconDrawable = null
 
-        // Кнопка перехода к входу
         binding.btnGoToLogin.setOnClickListener {
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
             finish()
         }
 
-        // Кнопка регистрации
         binding.btnSignUp.setOnClickListener {
             val name = binding.tilName.editText?.text.toString().trim()
             val surname = binding.tilSurame.editText?.text.toString().trim()
@@ -55,7 +51,6 @@ class SignUpActivity : AppCompatActivity() {
                     when (result) {
                         is AuthResult.Success -> {
                             Snackbar.make(binding.root, "Регистрация успешна!", Snackbar.LENGTH_SHORT).show()
-                            // Переход на главный экран или вход
                             val intent = Intent(this@SignUpActivity, SignInActivity::class.java)
                             startActivity(intent)
                             finish()
@@ -70,7 +65,6 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        // Скрытие клавиатуры при клике вне полей
         binding.main.setOnTouchListener { view, event ->
             currentFocus?.clearFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
