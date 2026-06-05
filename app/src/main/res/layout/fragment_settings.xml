@@ -5,16 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="20dp"
+    android:background="?android:attr/colorBackground">
 
-    <!-- Информация о пользователе -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/userInfoLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -22,62 +24,62 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:padding="24dp">
 
-            <!-- Аватар/Иконка -->
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivUserAvatar"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/ic_person"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:contentDescription="Аватар пользователя"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person"
+                app:cornerFamily="rounded"
+                app:cornerSize="50%"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@color/primary_color" />
 
-            <!-- Имя пользователя -->
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="20dp"
                 android:text="Имя Фамилия"
-                android:textSize="18sp"
+                android:textColor="@color/primary_color"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
                 app:layout_constraintTop_toTopOf="@id/ivUserAvatar" />
 
-            <!-- Должность -->
             <TextView
                 android:id="@+id/tvUserTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
                 android:text="Должность"
-                android:textSize="14sp"
                 android:textColor="@color/secondary_text_color"
+                android:textSize="15sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvUserName"
                 app:layout_constraintTop_toBottomOf="@id/tvUserName" />
 
-            <!-- ID пользователя -->
             <TextView
                 android:id="@+id/tvUserId"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="monospace"
                 android:text="ID: 123"
-                android:textSize="12sp"
                 android:textColor="@color/hint_text_color"
+                android:textSize="13sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvUserName"
                 app:layout_constraintTop_toBottomOf="@id/tvUserTitle" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- Сообщение если пользователь не авторизован -->
     <TextView
         android:id="@+id/tvNoUser"
         android:layout_width="0dp"
@@ -88,28 +90,27 @@
         android:gravity="center"
         android:padding="32dp"
         android:visibility="gone"
+        android:textColor="@color/secondary_text_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Кнопка выхода -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="Выйти из аккаунта"
         android:textSize="16sp"
+        android:letterSpacing="0.02"
         app:icon="@drawable/ic_logout"
-        app:iconGravity="start"
+        app:iconGravity="textStart"
         app:iconTint="@android:color/white"
+        app:cornerRadius="16dp"
+        app:backgroundTint="?attr/colorError"
+        android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/userInfoLayout" />
-
-    <!-- Кнопка очистки кэша -->
-
-
-    <!-- Версия приложения -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

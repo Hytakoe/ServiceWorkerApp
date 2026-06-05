@@ -5,8 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
+import com.example.mobileapp.R
 import com.example.mobileapp.data.model.AuthResult
 import com.example.mobileapp.databinding.ActivitySignUpBinding
 import com.example.mobileapp.ui.sign_in.SignInActivity
@@ -24,6 +27,14 @@ class SignUpActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottom = if (ime.bottom > 0) ime.bottom else systemBars.bottom
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottom)
+            insets
+        }
 
         binding.tilName.errorIconDrawable = null
         binding.tilSurame.errorIconDrawable = null

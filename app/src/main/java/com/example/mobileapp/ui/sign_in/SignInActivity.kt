@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -51,6 +53,14 @@ class SignInActivity : AppCompatActivity() {
 
         binding.btnSignIn.setOnClickListener {
             viewModel.onSignInClicked()
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottom = if (ime.bottom > 0) ime.bottom else systemBars.bottom
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottom)
+            insets
         }
     }
 
